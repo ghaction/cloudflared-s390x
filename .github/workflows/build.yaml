@@ -20,10 +20,9 @@ jobs:
       contents: write
     env:
       GOOS: linux
-      GOARCH: arm
-      GOARM: 6
+      GOARCH: s390x
       CGO_ENABLED: 0
-      CC: arm-linux-gnueabi-gcc
+      CC: gcc  # s390x 使用默认 GCC
       BUILD_ID: ${{ github.run_number }}
     steps:
       - name: Checkout
@@ -61,7 +60,7 @@ jobs:
         shell: bash
         run: |
           sudo apt update
-          sudo apt install -y build-essential gcc-arm-linux-gnueabi libdigest-sha-perl
+          sudo apt install -y build-essential gcc libdigest-sha-perl
           gem install fpm
 
       - name: Build
@@ -72,20 +71,19 @@ jobs:
           mkdir -p $ARTIFACT_DIR
 
           # rpm packages invert the - and _
-          RPMVERSION=$(echo $VERSION|sed -r 's/-/_/g')
+          RPMVERSION=$(echo $VERSION | sed -r 's/-/_/g')
           make cloudflared-rpm
-          mv cloudflared-$RPMVERSION-1.arm.rpm $ARTIFACT_DIR/cloudflared.rpm
+          mv cloudflared-$RPMVERSION-1.s390x.rpm $ARTIFACT_DIR/cloudflared.rpm
 
           # deb packages
           make cloudflared-deb
-          mv cloudflared\_$VERSION\_arm.deb $ARTIFACT_DIR/cloudflared.deb
+          mv cloudflared\_$VERSION\_s390x.deb $ARTIFACT_DIR/cloudflared.deb
 
           # linux binary
           mv cloudflared $ARTIFACT_DIR/cloudflared
 
         env:
-          TARGET_ARCH: arm
-          TARGET_ARM: 6
+          TARGET_ARCH: s390x
           VERSION: ${{ env.CLOUDFLARED_VERSION }}
 
       - name: Calculate SHA256 checksum
